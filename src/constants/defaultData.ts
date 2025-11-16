@@ -1,0 +1,102 @@
+import { ShoppingList } from "@/types";
+
+export const DEFAULT_SHOPPING_LISTS: ShoppingList[] = [
+  {
+    id: "1",
+    name: "týdenní nákup",
+    category: "běžné věci",
+    ingredients: [
+      "rohlíky",
+      "máslo",
+      "jogurt",
+      "banány",
+      "šunka",
+      "sýr",
+      "mléko",
+      "káva",
+      "těstoviny",
+      "rajčata"
+    ]
+  },
+  {
+    id: "2", 
+    name: "párty u kámoše",
+    category: "akce",
+    ingredients: [
+      "chipsy",
+      "kola",
+      "pivo",
+      "pizza",
+      "čokoláda",
+      "brambůrky",
+      "kelímky",
+      "ubrousky"
+    ]
+  },
+  {
+    id: "3",
+    name: "zdravé jídlo",
+    category: "běžné věci",
+    ingredients: [
+      "ořechy",
+      "mrkev",
+      "jablka",
+      "hummus",
+      "müsli tyčinky",
+      "borůvky",
+      "avokádo"
+    ]
+  },
+  {
+    id: "4",
+    name: "narozeniny",
+    category: "akce",
+    ingredients: [
+      "dort",
+      "balonky",
+      "svíčky",
+      "dárek",
+      "papírové talíře",
+      "limonáda"
+    ]
+  },
+  {
+    id: "5",
+    name: "random věci",
+    category: "ostatní",
+    ingredients: [
+      "toaletní papír",
+      "zubní pasta",
+      "šampon",
+      "prací prášek",
+      "žárovka",
+      "baterie"
+    ]
+  },
+  {
+    id: "6",
+    name: "snídaně",
+    category: "běžné věci",
+    ingredients: [
+      "cereálie",
+      "med",
+      "džem",
+      "croissanty",
+      "pomerančový džus"
+    ]
+  },
+  {
+    id: "7",
+    name: "grilování",
+    category: "akce",
+    ingredients: [
+      "klobásy",
+      "housky",
+      "hořčice",
+      "kečup",
+      "salát",
+      "uhlí",
+      "papírové ubrousky"
+    ]
+  }
+];

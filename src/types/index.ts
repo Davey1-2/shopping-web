@@ -2,7 +2,8 @@ export interface ShoppingList {
   id: string;
   name: string;
   ingredients: string[];
-  createdAt: Date;
+  category: string;
+  createdOnHome?: boolean;
 }
 
 export interface ModalProps {

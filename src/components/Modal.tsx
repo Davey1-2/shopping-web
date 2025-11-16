@@ -22,6 +22,8 @@ export default function Modal({
   useEffect(() => {
     setIngredients(initialIngredients);
     setListName(initialName);
+    setEditingIndex(null);
+    setEditingValue("");
   }, [initialIngredients, initialName, isOpen]);
 
   const addIngredient = () => {
@@ -67,6 +69,8 @@ export default function Modal({
     setIngredients([]);
     setCurrentIngredient("");
     setListName("");
+    setEditingIndex(null);
+    setEditingValue("");
   };
 
   const handleClose = () => {
@@ -97,13 +101,13 @@ export default function Modal({
           {mode === "edit" && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Shopping List Name
+                Název nákupního seznamu
               </label>
               <input
                 type="text"
                 value={listName}
                 onChange={(e) => setListName(e.target.value)}
-                placeholder="Enter list name..."
+                placeholder="Zadejte název seznamu..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -115,21 +119,21 @@ export default function Modal({
               value={currentIngredient}
               onChange={(e) => setCurrentIngredient(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addIngredient()}
-              placeholder="Enter ingredient..."
+              placeholder="Zadejte ingredienci..."
               className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
               onClick={addIngredient}
               className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
             >
-              Add
+              Přidat
             </button>
           </div>
 
           <div className="max-h-48 overflow-y-auto">
             {ingredients.length === 0 ? (
               <p className="text-gray-500 text-center py-4">
-                No ingredients added yet
+                Zatím žádné ingredience
               </p>
             ) : (
               <ul className="space-y-2">
@@ -154,14 +158,14 @@ export default function Modal({
                         <button
                           onClick={saveEdit}
                           className="text-green-600 hover:text-green-800 p-1"
-                          title="Save"
+                          title="uložit"
                         >
                           <Check size={16} />
                         </button>
                         <button
                           onClick={cancelEdit}
                           className="text-gray-500 hover:text-gray-700 p-1"
-                          title="Cancel"
+                          title="zrušit"
                         >
                           <X size={16} />
                         </button>
@@ -175,14 +179,14 @@ export default function Modal({
                           <button
                             onClick={() => startEditing(index)}
                             className="text-blue-500 hover:text-blue-700 p-1"
-                            title="Edit ingredient"
+                            title="upravit ingredienci"
                           >
                             <Edit2 size={16} />
                           </button>
                           <button
                             onClick={() => removeIngredient(index)}
                             className="text-red-500 hover:text-red-700 p-1"
-                            title="Delete ingredient"
+                            title="smazat ingredienci"
                           >
                             <X size={16} />
                           </button>
@@ -201,13 +205,13 @@ export default function Modal({
             onClick={handleClose}
             className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
           >
-            Cancel
+            Zrušit
           </button>
           <button
             onClick={handleSave}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
-            Save
+            Uložit
           </button>
         </div>
       </div>
