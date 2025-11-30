@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import { createShoppingList, getShoppingList, myListShoppingList, updateShoppingList, deleteShoppingList } from '../controllers/shoppingListController.js';
+
 const router = express.Router();
-const { createShoppingList, getShoppingList, myListShoppingList, updateShoppingList, deleteShoppingList } = require('../controllers/shoppingListController');
 
 const authMiddleware = (req, res, next) => {
   req.user = {
@@ -21,4 +22,4 @@ router.put('/update', updateShoppingList);
 
 router.delete('/delete', deleteShoppingList);
 
-module.exports = router;
+export default router;

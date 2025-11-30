@@ -1,117 +1,141 @@
-const { v4: uuidv4 } = require('uuid');
-
-let shoppingLists = [];
+import { v4 as uuidv4 } from 'uuid';
+import ShoppingList from '../models/ShoppingList.js';
 
 const validateCreateShoppingListDtoIn = (dtoIn) => {
   const errors = [];
-  
   if (!dtoIn.name || typeof dtoIn.name !== 'string' || dtoIn.name.trim().length === 0) {
     errors.push('Name is required and must be a non-empty string');
   }
-  
+  if (dtoIn.name && dtoIn.name.length > 100) {
+    errors.push('Name must not exceed 100 characters');
+  }
+  if (dtoIn.category && typeof dtoIn.category !== 'string') {
+    errors.push('Category must be a string');
+  }
+  if (dtoIn.category && dtoIn.category.length > 50) {
+    errors.push('Category must not exceed 50 characters');
+  }
   return errors;
 };
 
 const validateGetShoppingListDtoIn = (dtoIn) => {
   const errors = [];
-  
-  if (!dtoIn.id || typeof dtoIn.id !== 'string') {
-    errors.push('ID is required and must be a string');
+  if (!dtoIn.id || typeof dtoIn.id !== 'string' || dtoIn.id.trim().length === 0) {
+    errors.push('ID is required and must be a non-empty string');
   }
-  
   return errors;
 };
 
-const createShoppingList = (req, res) => {
+const validateUpdateShoppingListDtoIn = (dtoIn) => {
+  const errors = [];
+  if (!dtoIn.id || typeof dtoIn.id !== 'string') {
+    errors.push('ID is required and must be a string');
+  }
+  if (!dtoIn.name || typeof dtoIn.name !== 'string' || dtoIn.name.trim().length === 0) {
+    errors.push('Name is required and must be a non-empty string');
+  }
+  if (dtoIn.name && dtoIn.name.length > 100) {
+    errors.push('Name must not exceed 100 characters');
+  }
+  return errors;
+};
+
+const validateDeleteShoppingListDtoIn = (dtoIn) => {
+  const errors = [];
+  if (!dtoIn.id || typeof dtoIn.id !== 'string') {
+    errors.push('ID is required and must be a string');
+  }
+  return errors;
+};
+
+export const createShoppingList = async (req, res) => {
   try {
     const dtoIn = req.body;
-    
     const validationErrors = validateCreateShoppingListDtoIn(dtoIn);
+    
     if (validationErrors.length > 0) {
       return res.status(400).json({
         uuAppErrorMap: {
           validationError: {
             type: 'error',
-            message: 'Validation failed',
-            paramMap: {
-              missingKeyMap: {},
-              invalidValueKeyMap: validationErrors.reduce((acc, error, index) => {
-                acc[`error${index}`] = error;
-                return acc;
-              }, {})
-            }
+            message: 'Input validation failed',
+            paramMap: { errors: validationErrors }
           }
         }
       });
     }
 
-    const newShoppingList = {
+    const newShoppingList = new ShoppingList({
       awid: uuidv4(),
-      id: uuidv4(),
       name: dtoIn.name.trim(),
+      category: dtoIn.category ? dtoIn.category.trim() : 'Obecné',
       state: 'active',
-      ownerUuIdentity: req.user?.uuIdentity || 'anonymous'
-    };
+      ownerUuIdentity: req.user?.uuIdentity || 'anonymous',
+      items: []
+    });
 
-    shoppingLists.push(newShoppingList);
+    const savedList = await newShoppingList.save();
 
     const dtoOut = {
-      awid: newShoppingList.awid,
-      id: newShoppingList.id,
-      name: newShoppingList.name,
-      state: newShoppingList.state,
-      ownerUuIdentity: newShoppingList.ownerUuIdentity
+      awid: savedList.awid,
+      id: savedList._id.toString(),
+      name: savedList.name,
+      category: savedList.category,
+      state: savedList.state,
+      ownerUuIdentity: savedList.ownerUuIdentity,
+      items: savedList.items,
+      createdAt: savedList.createdAt,
+      updatedAt: savedList.updatedAt
     };
 
     res.status(200).json(dtoOut);
     
-  } catch (error) {
+  } catch (err) {
+    console.error('Error in createShoppingList:', err);
     res.status(500).json({
       uuAppErrorMap: {
         serverError: {
           type: 'error',
-          message: 'Internal server error',
-          paramMap: {}
+          message: 'Internal Server Error',
+          paramMap: { error: err.message }
         }
       }
     });
   }
 };
 
-const getShoppingList = (req, res) => {
+export const getShoppingList = async (req, res) => {
   try {
     const dtoIn = req.query;
-    
     const validationErrors = validateGetShoppingListDtoIn(dtoIn);
+    
     if (validationErrors.length > 0) {
       return res.status(400).json({
         uuAppErrorMap: {
           validationError: {
             type: 'error',
-            message: 'Validation failed',
-            paramMap: {
-              missingKeyMap: {},
-              invalidValueKeyMap: validationErrors.reduce((acc, error, index) => {
-                acc[`error${index}`] = error;
-                return acc;
-              }, {})
-            }
+            message: 'Input validation failed',
+            paramMap: { errors: validationErrors }
           }
         }
       });
     }
 
-    const shoppingList = shoppingLists.find(list => list.id === dtoIn.id);
-    
+    const shoppingList = await ShoppingList.findOne({
+      $or: [
+        { _id: dtoIn.id },
+        { awid: dtoIn.id }
+      ],
+      state: { $ne: 'deleted' }
+    });
+
     if (!shoppingList) {
       return res.status(404).json({
         uuAppErrorMap: {
           shoppingListNotFound: {
             type: 'error',
-            message: 'Shopping list not found',
-            paramMap: {
-              id: dtoIn.id
-            }
+            message: `Shopping list with ID '${dtoIn.id}' not found`,
+            paramMap: { id: dtoIn.id }
           }
         }
       });
@@ -119,82 +143,97 @@ const getShoppingList = (req, res) => {
 
     const dtoOut = {
       awid: shoppingList.awid,
-      id: shoppingList.id,
+      id: shoppingList._id.toString(),
       name: shoppingList.name,
+      category: shoppingList.category,
       state: shoppingList.state,
-      ownerUuIdentity: shoppingList.ownerUuIdentity
+      ownerUuIdentity: shoppingList.ownerUuIdentity,
+      items: shoppingList.items,
+      createdAt: shoppingList.createdAt,
+      updatedAt: shoppingList.updatedAt
     };
 
     res.status(200).json(dtoOut);
     
-  } catch (error) {
+  } catch (err) {
+    console.error('Error in getShoppingList:', err);
     res.status(500).json({
       uuAppErrorMap: {
         serverError: {
           type: 'error',
-          message: 'Internal server error',
-          paramMap: {}
+          message: 'Internal Server Error',
+          paramMap: { error: err.message }
         }
       }
     });
   }
 };
 
-const myListShoppingList = (req, res) => {
+export const myListShoppingList = async (req, res) => {
   try {
     const dtoIn = req.query;
     const userIdentity = req.user?.uuIdentity;
     
     const pageIndex = parseInt(dtoIn.pageIndex) || 0;
-    const pageSize = parseInt(dtoIn.pageSize) || 10;
-    
-    const userLists = shoppingLists.filter(list => list.ownerUuIdentity === userIdentity);
-    const startIndex = pageIndex * pageSize;
-    const endIndex = startIndex + pageSize;
-    const paginatedLists = userLists.slice(startIndex, endIndex);
-    
+    const pageSize = Math.min(parseInt(dtoIn.pageSize) || 10, 100);
+    const skip = pageIndex * pageSize;
+
+    const filter = {
+      ownerUuIdentity: userIdentity,
+      state: { $ne: 'deleted' }
+    };
+
+    const [lists, total] = await Promise.all([
+      ShoppingList.find(filter)
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(pageSize)
+        .lean(),
+      ShoppingList.countDocuments(filter)
+    ]);
+
+    const itemList = lists.map(list => ({
+      awid: list.awid,
+      id: list._id.toString(),
+      name: list.name,
+      state: list.state,
+      ownerUuIdentity: list.ownerUuIdentity,
+      itemCount: list.items?.length || 0,
+      createdAt: list.createdAt,
+      updatedAt: list.updatedAt
+    }));
+
     const dtoOut = {
-      itemList: paginatedLists.map(list => ({
-        awid: list.awid,
-        id: list.id,
-        name: list.name,
-        state: list.state,
-        ownerUuIdentity: list.ownerUuIdentity
-      })),
+      itemList,
       pageInfo: {
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-        total: userLists.length
+        pageIndex,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize)
       }
     };
 
     res.status(200).json(dtoOut);
     
-  } catch (error) {
+  } catch (err) {
+    console.error('Error in myListShoppingList:', err);
     res.status(500).json({
       uuAppErrorMap: {
         serverError: {
           type: 'error',
           message: 'Internal server error',
-          paramMap: {}
+          paramMap: { error: err.message }
         }
       }
     });
   }
 };
 
-const updateShoppingList = (req, res) => {
+export const updateShoppingList = async (req, res) => {
   try {
     const dtoIn = req.body;
     const userIdentity = req.user?.uuIdentity;
-    
-    const validationErrors = [];
-    if (!dtoIn.id || typeof dtoIn.id !== 'string') {
-      validationErrors.push('ID is required and must be a string');
-    }
-    if (!dtoIn.name || typeof dtoIn.name !== 'string' || dtoIn.name.trim().length === 0) {
-      validationErrors.push('Name is required and must be a non-empty string');
-    }
+    const validationErrors = validateUpdateShoppingListDtoIn(dtoIn);
     
     if (validationErrors.length > 0) {
       return res.status(400).json({
@@ -214,75 +253,75 @@ const updateShoppingList = (req, res) => {
       });
     }
 
-    const shoppingListIndex = shoppingLists.findIndex(list => list.id === dtoIn.id);
+    const shoppingList = await ShoppingList.findOne({
+      $or: [
+        { _id: dtoIn.id },
+        { awid: dtoIn.id }
+      ],
+      state: { $ne: 'deleted' }
+    });
     
-    if (shoppingListIndex === -1) {
+    if (!shoppingList) {
       return res.status(404).json({
         uuAppErrorMap: {
           shoppingListNotFound: {
             type: 'error',
             message: 'Shopping list not found',
-            paramMap: {
-              id: dtoIn.id
-            }
+            paramMap: { id: dtoIn.id }
           }
         }
       });
     }
 
-    const shoppingList = shoppingLists[shoppingListIndex];
-    
     if (shoppingList.ownerUuIdentity !== userIdentity) {
       return res.status(403).json({
         uuAppErrorMap: {
           unauthorizedAccess: {
             type: 'error',
             message: 'Only the owner can update this shopping list',
-            paramMap: {
-              id: dtoIn.id
-            }
+            paramMap: { id: dtoIn.id }
           }
         }
       });
     }
 
-    shoppingLists[shoppingListIndex] = {
-      ...shoppingList,
-      name: dtoIn.name.trim()
-    };
+    shoppingList.name = dtoIn.name.trim();
+    shoppingList.updatedAt = new Date();
+    
+    const updatedList = await shoppingList.save();
 
     const dtoOut = {
-      awid: shoppingLists[shoppingListIndex].awid,
-      id: shoppingLists[shoppingListIndex].id,
-      name: shoppingLists[shoppingListIndex].name,
-      state: shoppingLists[shoppingListIndex].state,
-      ownerUuIdentity: shoppingLists[shoppingListIndex].ownerUuIdentity
+      awid: updatedList.awid,
+      id: updatedList._id.toString(),
+      name: updatedList.name,
+      state: updatedList.state,
+      ownerUuIdentity: updatedList.ownerUuIdentity,
+      items: updatedList.items,
+      createdAt: updatedList.createdAt,
+      updatedAt: updatedList.updatedAt
     };
 
     res.status(200).json(dtoOut);
     
-  } catch (error) {
+  } catch (err) {
+    console.error('Error in updateShoppingList:', err);
     res.status(500).json({
       uuAppErrorMap: {
         serverError: {
           type: 'error',
           message: 'Internal server error',
-          paramMap: {}
+          paramMap: { error: err.message }
         }
       }
     });
   }
 };
 
-const deleteShoppingList = (req, res) => {
+export const deleteShoppingList = async (req, res) => {
   try {
     const dtoIn = req.body;
     const userIdentity = req.user?.uuIdentity;
-    
-    const validationErrors = [];
-    if (!dtoIn.id || typeof dtoIn.id !== 'string') {
-      validationErrors.push('ID is required and must be a string');
-    }
+    const validationErrors = validateDeleteShoppingListDtoIn(dtoIn);
     
     if (validationErrors.length > 0) {
       return res.status(400).json({
@@ -302,63 +341,60 @@ const deleteShoppingList = (req, res) => {
       });
     }
 
-    const shoppingListIndex = shoppingLists.findIndex(list => list.id === dtoIn.id);
+    const shoppingList = await ShoppingList.findOne({
+      $or: [
+        { _id: dtoIn.id },
+        { awid: dtoIn.id }
+      ],
+      state: { $ne: 'deleted' }
+    });
     
-    if (shoppingListIndex === -1) {
+    if (!shoppingList) {
       return res.status(404).json({
         uuAppErrorMap: {
           shoppingListNotFound: {
             type: 'error',
             message: 'Shopping list not found',
-            paramMap: {
-              id: dtoIn.id
-            }
+            paramMap: { id: dtoIn.id }
           }
         }
       });
     }
 
-    const shoppingList = shoppingLists[shoppingListIndex];
-    
     if (shoppingList.ownerUuIdentity !== userIdentity) {
       return res.status(403).json({
         uuAppErrorMap: {
           unauthorizedAccess: {
             type: 'error',
             message: 'Only the owner can delete this shopping list',
-            paramMap: {
-              id: dtoIn.id
-            }
+            paramMap: { id: dtoIn.id }
           }
         }
       });
     }
 
-    shoppingLists.splice(shoppingListIndex, 1);
+    shoppingList.state = 'deleted';
+    shoppingList.updatedAt = new Date();
+    await shoppingList.save();
 
     const dtoOut = {
-      success: true
+      success: true,
+      id: shoppingList._id.toString(),
+      awid: shoppingList.awid
     };
 
     res.status(200).json(dtoOut);
     
-  } catch (error) {
+  } catch (err) {
+    console.error('Error in deleteShoppingList:', err);
     res.status(500).json({
       uuAppErrorMap: {
         serverError: {
           type: 'error',
           message: 'Internal server error',
-          paramMap: {}
+          paramMap: { error: err.message }
         }
       }
     });
   }
-};
-
-module.exports = {
-  createShoppingList,
-  getShoppingList,
-  myListShoppingList,
-  updateShoppingList,
-  deleteShoppingList
 };

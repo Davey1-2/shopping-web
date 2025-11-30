@@ -1,9 +1,15 @@
-const express = require('express');
-const cors = require('cors');
-const shoppingListRoutes = require('./routes/shoppingListRoutes');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import connectDB from './config/database.js';
+import shoppingListRoutes from './routes/shoppingListRoutes.js';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+connectDB();
 
 app.use(cors());
 app.use(express.json());
@@ -39,6 +45,7 @@ app.use('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Shopping List API server running on port ${PORT}`);
+  console.log(`Server ready at http://localhost:${PORT}`);
+  console.log(`API Documentation: Check README.md`);
+  console.log(`Test with Insomnia: Import test/insomnia/shopping-list-api.json`);
 });
-
-module.exports = app;

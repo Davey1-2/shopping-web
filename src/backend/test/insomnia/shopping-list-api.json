@@ -1,0 +1,242 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2024-01-01T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_create_shopping_list",
+      "parentId": "fld_shopping_list",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "url": "{{ _.base_url }}/shoppingList/create",
+      "name": "Create Shopping List",
+      "description": "Creates a new shopping list",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Weekly Groceries\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_content_type",
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "id": "pair_auth",
+          "name": "x-user-identity",
+          "value": "{{ _.user_identity }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704067200000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_shopping_list",
+      "parentId": "fld_shopping_list",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "url": "{{ _.base_url }}/shoppingList/get",
+      "name": "Get Shopping List",
+      "description": "Retrieves a specific shopping list by ID",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_id",
+          "name": "id",
+          "value": "{{ _.shopping_list_id }}",
+          "description": "Shopping list ID or AWID"
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_auth",
+          "name": "x-user-identity",
+          "value": "{{ _.user_identity }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704067100000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_my_list_shopping_list",
+      "parentId": "fld_shopping_list",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "url": "{{ _.base_url }}/shoppingList/myList",
+      "name": "My Shopping Lists",
+      "description": "Retrieves all shopping lists for the authenticated user",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_page_index",
+          "name": "pageIndex",
+          "value": "0",
+          "description": "Page index (0-based)"
+        },
+        {
+          "id": "pair_page_size",
+          "name": "pageSize",
+          "value": "10",
+          "description": "Number of items per page"
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_auth",
+          "name": "x-user-identity",
+          "value": "{{ _.user_identity }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704067000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_update_shopping_list",
+      "parentId": "fld_shopping_list",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "url": "{{ _.base_url }}/shoppingList/update",
+      "name": "Update Shopping List",
+      "description": "Updates an existing shopping list",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"{{ _.shopping_list_id }}\",\n  \"name\": \"Updated Shopping List Name\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_content_type",
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "id": "pair_auth",
+          "name": "x-user-identity",
+          "value": "{{ _.user_identity }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704066900000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_delete_shopping_list",
+      "parentId": "fld_shopping_list",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "url": "{{ _.base_url }}/shoppingList/delete",
+      "name": "Delete Shopping List",
+      "description": "Deletes a shopping list (soft delete)",
+      "method": "DELETE",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"{{ _.shopping_list_id }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_content_type",
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "id": "pair_auth",
+          "name": "x-user-identity",
+          "value": "{{ _.user_identity }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704066800000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_shopping_list",
+      "parentId": "wrk_shopping_list_api",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "name": "Shopping List API",
+      "description": "All shopping list related endpoints",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1704067200000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "wrk_shopping_list_api",
+      "parentId": null,
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "name": "Shopping List API Collection",
+      "description": "Complete API collection for Shopping List application",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_base",
+      "parentId": "wrk_shopping_list_api",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3001",
+        "user_identity": "test-user-123",
+        "shopping_list_id": ""
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "user_identity",
+          "shopping_list_id"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1704067200000,
+      "_type": "environment"
+    }
+  ]
+}
