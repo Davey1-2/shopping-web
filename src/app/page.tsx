@@ -3,60 +3,98 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ShoppingBag, ShoppingCart } from "lucide-react";
-import ShoppingListCard from "@/components/ShoppingListCard";
+import {
+  ShoppingBag,
+  Wifi,
+  WifiOff,
+  Database,
+} from "lucide-react";
+
 import Modal from "@/components/Modal";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { ShoppingList } from "@/types";
-import { DEFAULT_SHOPPING_LISTS } from "@/constants/defaultData";
+import {
+  shoppingListService,
+  ConnectionStatus,
+} from "@/services/shoppingListService";
 
 export default function Home() {
   const router = useRouter();
+
   const [allShoppingLists, setAllShoppingLists] = useState<ShoppingList[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] =
+    useState<ConnectionStatus | null>(null);
+
   const [newListName, setNewListName] = useState("");
   const [newListCategory, setNewListCategory] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingList, setEditingList] = useState<ShoppingList | null>(null);
   const [modalTitle, setModalTitle] = useState("");
-  const [modalMode, setModalMode] = useState<"ingredients" | "edit">("ingredients");
+  const [modalMode, setModalMode] = useState<"ingredients" | "edit">(
+    "ingredients"
+  );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [listToDelete, setListToDelete] = useState<ShoppingList | null>(null);
 
   useEffect(() => {
-    const savedLists = localStorage.getItem("shoppingLists");
-    if (savedLists) {
+    const loadShoppingLists = async () => {
       try {
-        const parsedLists = JSON.parse(savedLists);
-        setAllShoppingLists(parsedLists);
-      } catch (error) {
-        console.error("Error loading shopping lists:", error);
-        setAllShoppingLists(DEFAULT_SHOPPING_LISTS);
+        setIsLoading(true);
+        setError(null);
+        setConnectionStatus(shoppingListService.getConnectionStatus());
+        const lists = await shoppingListService.getAllShoppingLists();
+        setAllShoppingLists(lists);
+        setConnectionStatus(shoppingListService.getConnectionStatus());
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Nepodařilo se načíst data"
+        );
+        console.error("Failed to load shopping lists:", err);
+      } finally {
+        setIsLoading(false);
       }
-    } else {
-      setAllShoppingLists(DEFAULT_SHOPPING_LISTS);
-    }
+    };
+
+    loadShoppingLists();
   }, []);
 
   useEffect(() => {
-    console.log("Saving to localStorage:", allShoppingLists);
-    localStorage.setItem("shoppingLists", JSON.stringify(allShoppingLists));
-  }, [allShoppingLists]);
+    const interval = setInterval(() => {
+      setConnectionStatus(shoppingListService.getConnectionStatus());
+    }, 5000);
 
-  const homeShoppingLists = allShoppingLists.filter(list => list.createdOnHome === true);
+    return () => clearInterval(interval);
+  }, []);
 
-  const createShoppingList = () => {
-    if (newListName.trim() && newListCategory.trim()) {
-      const newList: ShoppingList = {
-        id: Date.now().toString(),
+
+    // Filter shopping lists created on home page - todo:
+  const homeShoppingLists = allShoppingLists.filter(
+    (list) => list.createdOnHome === true
+  );
+
+  const createShoppingList = async () => {
+    if (!newListName.trim()) return;
+
+    try {
+      setError(null);
+      const newList = await shoppingListService.createShoppingList({
         name: newListName.trim(),
-        category: newListCategory.trim(),
+        category: newListCategory.trim() || "Obecné",
         ingredients: [],
         createdOnHome: true,
-      };
-      
+      });
+
       setAllShoppingLists([...allShoppingLists, newList]);
       setNewListName("");
       setNewListCategory("");
+      setConnectionStatus(shoppingListService.getConnectionStatus());
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Nepodařilo se vytvořit seznam"
+      );
+      console.error("Failed to create shopping list:", err);
     }
   };
 
@@ -65,12 +103,25 @@ export default function Home() {
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
-    if (listToDelete) {
-      setAllShoppingLists(allShoppingLists.filter((list) => list.id !== listToDelete.id));
+  const confirmDelete = async () => {
+    if (!listToDelete) return;
+
+    try {
+      setError(null);
+      await shoppingListService.deleteShoppingList(listToDelete.id);
+      setAllShoppingLists(
+        allShoppingLists.filter((list) => list.id !== listToDelete.id)
+      );
+      setConnectionStatus(shoppingListService.getConnectionStatus());
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Nepodařilo se smazat seznam"
+      );
+      console.error("Failed to delete shopping list:", err);
+    } finally {
       setListToDelete(null);
+      setIsDeleteDialogOpen(false);
     }
-    setIsDeleteDialogOpen(false);
   };
 
   const cancelDelete = () => {
@@ -92,8 +143,18 @@ export default function Home() {
     setIsModalOpen(true);
   };
 
-  const saveChanges = (ingredients: string[], name?: string) => {
-    if (editingList) {
+  const saveChanges = async (ingredients: string[], name?: string) => {
+    if (!editingList) return;
+
+    try {
+      setError(null);
+
+      if (name && name.trim() !== editingList.name) {
+        await shoppingListService.updateShoppingList(editingList.id, {
+          name: name.trim(),
+        });
+      }
+
       setAllShoppingLists(
         allShoppingLists.map((list) =>
           list.id === editingList.id
@@ -105,8 +166,16 @@ export default function Home() {
             : list
         )
       );
+
+      setConnectionStatus(shoppingListService.getConnectionStatus());
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Nepodařilo se uložit změny"
+      );
+      console.error("Failed to save changes:", err);
+    } finally {
+      setEditingList(null);
     }
-    setEditingList(null);
   };
 
   const closeModal = () => {
@@ -124,15 +193,56 @@ export default function Home() {
               <ShoppingBag className="w-12 h-12 text-blue-600" />
             </div>
           </div>
-          
+
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
             Nákupní seznamy
           </h1>
-          
-          <p className="text-lg text-gray-600 mb-8">
+
+          <p className="text-lg text-gray-600 mb-4">
             Vytvořte nákupní seznamy pro okamžité použití
           </p>
+
+          <div className="flex items-center justify-center gap-2 text-sm">
+            {connectionStatus ? (
+              connectionStatus.usingMock ? (
+                <>
+                  <Database className="w-4 h-4 text-orange-600" />
+                  <span className="text-orange-700">
+                    Offline režim (Mock data)
+                  </span>
+                </>
+              ) : connectionStatus.isOnline ? (
+                <>
+                  <Wifi className="w-4 h-4 text-green-600" />
+                  <span className="text-green-700">Připojeno k serveru</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-4 h-4 text-red-600" />
+                  <span className="text-red-700">Server nedostupný</span>
+                </>
+              )
+            ) : (
+              <span className="text-gray-500">Načítání...</span>
+            )}
+          </div>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-red-600 rounded-full flex-shrink-0"></div>
+              <p className="text-red-800 font-medium">Chyba</p>
+            </div>
+            <p className="text-red-700 mt-1">{error}</p>
+            <button
+              onClick={() => setError(null)}
+              className="text-red-600 hover:text-red-800 text-sm mt-2 underline"
+            >
+              Zavřít
+            </button>
+          </div>
+        )}
 
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
@@ -147,6 +257,7 @@ export default function Home() {
                 onKeyDown={(e) => e.key === "Enter" && createShoppingList()}
                 placeholder="Zadejte název seznamu..."
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isLoading}
               />
               <div className="flex-1">
                 <input
@@ -154,67 +265,61 @@ export default function Home() {
                   value={newListCategory}
                   onChange={(e) => setNewListCategory(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && createShoppingList()}
-                  placeholder="Zadejte kategorii..."
+                  placeholder="Zadejte kategorii (volitelné)..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isLoading}
                 />
               </div>
               <button
                 onClick={createShoppingList}
-                disabled={!newListName.trim() || !newListCategory.trim()}
+                disabled={!newListName.trim() || isLoading}
                 className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
               >
-                Vytvořit
+                {isLoading ? "Načítání..." : "Vytvořit"}
               </button>
             </div>
           </div>
         </div>
 
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Vaše nákupní seznamy ({homeShoppingLists.length})
-          </h2>
-
-          {homeShoppingLists.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="flex justify-center mb-4">
-                <ShoppingCart className="w-16 h-16 text-gray-400" />
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <div className="flex justify-center mb-6">
+              <div className="bg-green-100 p-4 rounded-full">
+                <ShoppingBag className="w-16 h-16 text-green-600" />
               </div>
-              <h3 className="text-xl font-medium text-gray-600 mb-2">
-                Zatím žádné nákupní seznamy
-              </h3>
-              <Link
-                href="/shopping-lists"
-                className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <ShoppingBag className="w-5 h-5 mr-2" />
-                Zobrazit všechny nákupní seznamy
-              </Link>
             </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {homeShoppingLists.map((list) => (
-                  <ShoppingListCard
-                    key={list.id}
-                    shoppingList={list}
-                    onEdit={openEditModal}
-                    onDelete={handleDeleteClick}
-                    onAddIngredients={openIngredientsModal}
-                    onViewDetail={(list) => router.push(`/shopping-list/${list.id}`)}
-                  />
-                ))}
+
+            {isLoading ? (
+              <div className="py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Načítání nákupních seznamů...</p>
               </div>
-              <div className="text-center mt-8">
+            ) : (
+              <>
+                <h2 className="text-3xl font-bold text-gray-800 mb-6">
+                  {allShoppingLists.length === 0
+                    ? "Zatím žádné nákupní seznamy"
+                    : `${allShoppingLists.length} ${
+                        allShoppingLists.length === 1
+                          ? "nákupní seznam"
+                          : allShoppingLists.length < 5
+                            ? "nákupní seznamy"
+                            : "nákupních seznamů"
+                      }`}
+                </h2>
+
                 <Link
                   href="/shopping-lists"
-                  className="inline-flex items-center px-6 py-3 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                  className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-medium text-lg rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
                 >
-                  <ShoppingBag className="w-5 h-5 mr-2" />
-                  Zobrazit všechny seznamy
+                  <ShoppingBag className="w-6 h-6 mr-3" />
+                  {allShoppingLists.length === 0
+                    ? "Vytvořit první seznam"
+                    : "Zobrazit všechny seznamy"}
                 </Link>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </main>
 

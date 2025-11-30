@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Wifi, WifiOff, Database } from "lucide-react";
 import ShoppingListCard from "@/components/ShoppingListCard";
 import CategorySection from "@/components/CategorySection";
 import Modal from "@/components/Modal";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { ShoppingList } from "@/types";
-import { DEFAULT_SHOPPING_LISTS } from "@/constants/defaultData";
+import {
+  shoppingListService,
+  ConnectionStatus,
+} from "@/services/shoppingListService";
 
 export default function ShoppingListsPage() {
   const router = useRouter();
@@ -24,22 +27,26 @@ export default function ShoppingListsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [listToDelete, setListToDelete] = useState<ShoppingList | null>(null);
   const [newListCategory, setNewListCategory] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] =
+    useState<ConnectionStatus | null>(null);
 
-  const loadShoppingLists = () => {
-    const savedLists = localStorage.getItem("shoppingLists");
-    console.log("Loading from localStorage:", savedLists);
-    if (savedLists) {
-      try {
-        const parsedLists = JSON.parse(savedLists);
-        console.log("Parsed lists:", parsedLists);
-        setShoppingLists(parsedLists);
-      } catch (error) {
-        console.error("Error loading shopping lists from localStorage:", error);
-        setShoppingLists(DEFAULT_SHOPPING_LISTS);
-      }
-    } else {
-      console.log("No saved lists, using defaults");
-      setShoppingLists(DEFAULT_SHOPPING_LISTS);
+  const loadShoppingLists = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      setConnectionStatus(shoppingListService.getConnectionStatus());
+      const lists = await shoppingListService.getAllShoppingLists();
+      setShoppingLists(lists);
+      setConnectionStatus(shoppingListService.getConnectionStatus());
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Nepodařilo se načíst data"
+      );
+      console.error("Failed to load shopping lists:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -52,19 +59,19 @@ export default function ShoppingListsPage() {
       loadShoppingLists();
     };
 
-    window.addEventListener('focus', handleFocus);
-    
+    window.addEventListener("focus", handleFocus);
+
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         loadShoppingLists();
       }
     };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
@@ -93,15 +100,20 @@ export default function ShoppingListsPage() {
     }
   };
 
-  const groupedLists = shoppingLists.reduce((acc, list) => {
-    if (!acc[list.category]) {
-      acc[list.category] = [];
-    }
-    acc[list.category].push(list);
-    return acc;
-  }, {} as Record<string, ShoppingList[]>);
+  const groupedLists = shoppingLists.reduce(
+    (acc, list) => {
+      if (!acc[list.category]) {
+        acc[list.category] = [];
+      }
+      acc[list.category].push(list);
+      return acc;
+    },
+    {} as Record<string, ShoppingList[]>
+  );
 
-  const existingCategories = Array.from(new Set(shoppingLists.map(list => list.category)));
+  const existingCategories = Array.from(
+    new Set(shoppingLists.map((list) => list.category))
+  );
 
   const handleDeleteClick = (list: ShoppingList) => {
     setListToDelete(list);
@@ -110,7 +122,9 @@ export default function ShoppingListsPage() {
 
   const confirmDelete = () => {
     if (listToDelete) {
-      setShoppingLists(shoppingLists.filter((list) => list.id !== listToDelete.id));
+      setShoppingLists(
+        shoppingLists.filter((list) => list.id !== listToDelete.id)
+      );
       setListToDelete(null);
     }
     setIsDeleteDialogOpen(false);
@@ -229,7 +243,9 @@ export default function ShoppingListsPage() {
                   onEdit={openEditModal}
                   onDelete={handleDeleteClick}
                   onAddIngredients={openIngredientsModal}
-                  onViewDetail={(list) => router.push(`/shopping-list/${list.id}`)}
+                  onViewDetail={(list) =>
+                    router.push(`/shopping-list/${list.id}`)
+                  }
                 />
               ))}
             </div>
