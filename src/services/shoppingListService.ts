@@ -125,7 +125,7 @@ class ShoppingListService {
       const apiData = this.convertToApiFormat(list);
       const result = await this.activeService.createShoppingList(
         apiData.name,
-        apiData.category
+        apiData.category,
       );
       return this.convertToFrontendFormat(result);
     } catch (error) {
@@ -148,7 +148,7 @@ class ShoppingListService {
     try {
       console.log(
         "Getting shopping lists from:",
-        this.isUsingMockData() ? "Mock Service" : "API Service"
+        this.isUsingMockData() ? "Mock Service" : "API Service",
       );
       const result = await this.activeService.getMyShoppingLists(0, 100);
       console.log("Raw result from service:", result);
@@ -170,7 +170,7 @@ class ShoppingListService {
 
   async updateShoppingList(
     id: string,
-    updates: Partial<ShoppingList>
+    updates: Partial<ShoppingList>,
   ): Promise<ShoppingList> {
     try {
       if (!updates.name) {
@@ -178,7 +178,7 @@ class ShoppingListService {
       }
       const result = await this.activeService.updateShoppingList(
         id,
-        updates.name
+        updates.name,
       );
       return this.convertToFrontendFormat(result);
     } catch (error) {

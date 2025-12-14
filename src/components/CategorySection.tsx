@@ -37,7 +37,7 @@ export default function CategorySection({
         )}
         <h2 className="text-xl font-bold text-gray-800">{categoryName}</h2>
         <span className="text-sm text-gray-500 ml-auto">
-          ({lists.length} {lists.length === 1 ? 'seznam' : 'seznamů'})
+          ({lists.length} {lists.length === 1 ? "seznam" : "seznamů"})
         </span>
       </button>
 

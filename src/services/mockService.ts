@@ -127,7 +127,7 @@ class MockService {
 
   async createShoppingList(
     name: string,
-    category?: string
+    category?: string,
   ): Promise<ApiShoppingList> {
     await this.delay();
 
@@ -160,7 +160,7 @@ class MockService {
 
   async getMyShoppingLists(
     pageIndex: number = 0,
-    pageSize: number = 50
+    pageSize: number = 50,
   ): Promise<PaginatedResponse<ApiShoppingList>> {
     await this.delay();
 
@@ -198,7 +198,7 @@ class MockService {
   }
 
   async deleteShoppingList(
-    id: string
+    id: string,
   ): Promise<{ success: boolean; id: string; awid: string }> {
     await this.delay();
 

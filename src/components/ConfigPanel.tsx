@@ -35,7 +35,7 @@ export default function ConfigPanel({ isOpen, onClose }: ConfigPanelProps) {
 
   const handleConfigChange = (
     key: keyof AppConfig,
-    value: string | boolean
+    value: string | boolean,
   ) => {
     if (!config) return;
     const newConfig = { ...config, [key]: value };

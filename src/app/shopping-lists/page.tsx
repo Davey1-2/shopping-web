@@ -22,7 +22,7 @@ export default function ShoppingListsPage() {
   const [editingList, setEditingList] = useState<ShoppingList | null>(null);
   const [modalTitle, setModalTitle] = useState("");
   const [modalMode, setModalMode] = useState<"ingredients" | "edit">(
-    "ingredients"
+    "ingredients",
   );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [listToDelete, setListToDelete] = useState<ShoppingList | null>(null);
@@ -42,7 +42,7 @@ export default function ShoppingListsPage() {
       setConnectionStatus(shoppingListService.getConnectionStatus());
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Nepodařilo se načíst data"
+        err instanceof Error ? err.message : "Nepodařilo se načíst data",
       );
       console.error("Failed to load shopping lists:", err);
     } finally {
@@ -108,11 +108,11 @@ export default function ShoppingListsPage() {
       acc[list.category].push(list);
       return acc;
     },
-    {} as Record<string, ShoppingList[]>
+    {} as Record<string, ShoppingList[]>,
   );
 
   const existingCategories = Array.from(
-    new Set(shoppingLists.map((list) => list.category))
+    new Set(shoppingLists.map((list) => list.category)),
   );
 
   const handleDeleteClick = (list: ShoppingList) => {
@@ -123,7 +123,7 @@ export default function ShoppingListsPage() {
   const confirmDelete = () => {
     if (listToDelete) {
       setShoppingLists(
-        shoppingLists.filter((list) => list.id !== listToDelete.id)
+        shoppingLists.filter((list) => list.id !== listToDelete.id),
       );
       setListToDelete(null);
     }
@@ -159,8 +159,8 @@ export default function ShoppingListsPage() {
                 ingredients,
                 ...(name && { name: name.trim() }),
               }
-            : list
-        )
+            : list,
+        ),
       );
     }
     setEditingList(null);

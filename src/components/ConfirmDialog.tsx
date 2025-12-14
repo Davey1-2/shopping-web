@@ -19,7 +19,7 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
   confirmText = "Smazat",
-  cancelText = "Zrušit"
+  cancelText = "Zrušit",
 }: ConfirmDialogProps) {
   if (!isOpen) return null;
 

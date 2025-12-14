@@ -227,11 +227,7 @@
         "shopping_list_id": ""
       },
       "dataPropertyOrder": {
-        "&": [
-          "base_url",
-          "user_identity",
-          "shopping_list_id"
-        ]
+        "&": ["base_url", "user_identity", "shopping_list_id"]
       },
       "color": null,
       "isPrivate": false,

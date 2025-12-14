@@ -31,12 +31,12 @@ class ApiService {
 
   constructor(
     baseUrl: string = "http://localhost:3001",
-    userIdentity: string = "frontend-user"
+    userIdentity: string = "frontend-user",
   ) {
     this.baseUrl = baseUrl;
     this.userIdentity = userIdentity;
     console.log(
-      `ApiService initialized with baseUrl: ${baseUrl}, userIdentity: ${userIdentity}`
+      `ApiService initialized with baseUrl: ${baseUrl}, userIdentity: ${userIdentity}`,
     );
   }
 
@@ -44,13 +44,13 @@ class ApiService {
     this.baseUrl = baseUrl;
     this.userIdentity = userIdentity;
     console.log(
-      `ApiService config updated - baseUrl: ${baseUrl}, userIdentity: ${userIdentity}`
+      `ApiService config updated - baseUrl: ${baseUrl}, userIdentity: ${userIdentity}`,
     );
   }
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
@@ -93,7 +93,7 @@ class ApiService {
 
   async createShoppingList(
     name: string,
-    category?: string
+    category?: string,
   ): Promise<ApiShoppingList> {
     return this.request<ApiShoppingList>("/shoppingList/create", {
       method: "POST",
@@ -103,16 +103,16 @@ class ApiService {
 
   async getShoppingList(id: string): Promise<ApiShoppingList> {
     return this.request<ApiShoppingList>(
-      `/shoppingList/get?id=${encodeURIComponent(id)}`
+      `/shoppingList/get?id=${encodeURIComponent(id)}`,
     );
   }
 
   async getMyShoppingLists(
     pageIndex: number = 0,
-    pageSize: number = 50
+    pageSize: number = 50,
   ): Promise<PaginatedResponse<ApiShoppingList>> {
     return this.request<PaginatedResponse<ApiShoppingList>>(
-      `/shoppingList/myList?pageIndex=${pageIndex}&pageSize=${pageSize}`
+      `/shoppingList/myList?pageIndex=${pageIndex}&pageSize=${pageSize}`,
     );
   }
 
@@ -124,14 +124,14 @@ class ApiService {
   }
 
   async deleteShoppingList(
-    id: string
+    id: string,
   ): Promise<{ success: boolean; id: string; awid: string }> {
     return this.request<{ success: boolean; id: string; awid: string }>(
       "/shoppingList/delete",
       {
         method: "DELETE",
         body: JSON.stringify({ id }),
-      }
+      },
     );
   }
 

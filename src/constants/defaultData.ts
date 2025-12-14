@@ -15,11 +15,11 @@ export const DEFAULT_SHOPPING_LISTS: ShoppingList[] = [
       "mléko",
       "káva",
       "těstoviny",
-      "rajčata"
-    ]
+      "rajčata",
+    ],
   },
   {
-    id: "2", 
+    id: "2",
     name: "párty u kámoše",
     category: "akce",
     ingredients: [
@@ -30,8 +30,8 @@ export const DEFAULT_SHOPPING_LISTS: ShoppingList[] = [
       "čokoláda",
       "brambůrky",
       "kelímky",
-      "ubrousky"
-    ]
+      "ubrousky",
+    ],
   },
   {
     id: "3",
@@ -44,8 +44,8 @@ export const DEFAULT_SHOPPING_LISTS: ShoppingList[] = [
       "hummus",
       "müsli tyčinky",
       "borůvky",
-      "avokádo"
-    ]
+      "avokádo",
+    ],
   },
   {
     id: "4",
@@ -57,8 +57,8 @@ export const DEFAULT_SHOPPING_LISTS: ShoppingList[] = [
       "svíčky",
       "dárek",
       "papírové talíře",
-      "limonáda"
-    ]
+      "limonáda",
+    ],
   },
   {
     id: "5",
@@ -70,20 +70,14 @@ export const DEFAULT_SHOPPING_LISTS: ShoppingList[] = [
       "šampon",
       "prací prášek",
       "žárovka",
-      "baterie"
-    ]
+      "baterie",
+    ],
   },
   {
     id: "6",
     name: "snídaně",
     category: "běžné věci",
-    ingredients: [
-      "cereálie",
-      "med",
-      "džem",
-      "croissanty",
-      "pomerančový džus"
-    ]
+    ingredients: ["cereálie", "med", "džem", "croissanty", "pomerančový džus"],
   },
   {
     id: "7",
@@ -96,7 +90,7 @@ export const DEFAULT_SHOPPING_LISTS: ShoppingList[] = [
       "kečup",
       "salát",
       "uhlí",
-      "papírové ubrousky"
-    ]
-  }
+      "papírové ubrousky",
+    ],
+  },
 ];

@@ -18,6 +18,7 @@ A Node.js/Express backend API for managing shopping lists with MongoDB persisten
 ## Installation
 
 1. **Install dependencies:**
+
    ```bash
    cd src/backend
    npm install
@@ -25,6 +26,7 @@ A Node.js/Express backend API for managing shopping lists with MongoDB persisten
 
 2. **Set up environment variables:**
    Create a `.env` file in the backend directory:
+
    ```env
    PORT=3001
    MONGODB_URI=mongodb://localhost:27017/shopping-list-db
@@ -49,10 +51,12 @@ A Node.js/Express backend API for managing shopping lists with MongoDB persisten
 All endpoints require the `x-user-identity` header for authentication.
 
 ### 1. **POST /shoppingList/create**
+
 **Auth:** Owner  
 Creates a new shopping list.
 
 **Request Body:**
+
 ```json
 {
   "name": "Weekly Groceries"
@@ -60,13 +64,14 @@ Creates a new shopping list.
 ```
 
 **Response:**
+
 ```json
 {
   "awid": "uuid-string",
   "id": "mongodb-object-id",
   "name": "Weekly Groceries",
   "state": "active",
-  "ownerUuIdentity": "user-123",
+  "owner  Identity": "user-123",
   "items": [],
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z"
@@ -74,20 +79,23 @@ Creates a new shopping list.
 ```
 
 ### 2. **GET /shoppingList/get**
+
 **Auth:** Both (Owner/User)  
 Retrieves a specific shopping list.
 
 **Query Parameters:**
+
 - `id`: Shopping list ID or AWID
 
 **Response:**
+
 ```json
 {
   "awid": "uuid-string",
   "id": "mongodb-object-id",
   "name": "Weekly Groceries",
   "state": "active",
-  "ownerUuIdentity": "user-123",
+  "ownerIdentity": "user-123",
   "items": [],
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z"
@@ -95,14 +103,17 @@ Retrieves a specific shopping list.
 ```
 
 ### 3. **GET /shoppingList/myList**
+
 **Auth:** User  
 Retrieves all shopping lists for the authenticated user.
 
 **Query Parameters:**
+
 - `pageIndex`: Page number (0-based, default: 0)
 - `pageSize`: Items per page (default: 10, max: 100)
 
 **Response:**
+
 ```json
 {
   "itemList": [
@@ -111,7 +122,7 @@ Retrieves all shopping lists for the authenticated user.
       "id": "mongodb-object-id",
       "name": "Weekly Groceries",
       "state": "active",
-      "ownerUuIdentity": "user-123",
+      "ownerIdentity": "user-123",
       "itemCount": 5,
       "createdAt": "2024-01-01T00:00:00.000Z",
       "updatedAt": "2024-01-01T00:00:00.000Z"
@@ -127,10 +138,12 @@ Retrieves all shopping lists for the authenticated user.
 ```
 
 ### 4. **PUT /shoppingList/update**
+
 **Auth:** Owner  
 Updates an existing shopping list.
 
 **Request Body:**
+
 ```json
 {
   "id": "shopping-list-id",
@@ -139,6 +152,7 @@ Updates an existing shopping list.
 ```
 
 **Response:**
+
 ```json
 {
   "awid": "uuid-string",
@@ -153,10 +167,12 @@ Updates an existing shopping list.
 ```
 
 ### 5. **DELETE /shoppingList/delete**
+
 **Auth:** Owner  
 Soft deletes a shopping list.
 
 **Request Body:**
+
 ```json
 {
   "id": "shopping-list-id"
@@ -164,6 +180,7 @@ Soft deletes a shopping list.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -191,6 +208,7 @@ All endpoints return errors in the uuAppErrorMap format:
 ```
 
 ### Common Error Types:
+
 - `validationError`: Input validation failed
 - `shoppingListNotFound`: Requested list doesn't exist
 - `unauthorizedAccess`: User lacks permission
@@ -216,12 +234,13 @@ All endpoints return errors in the uuAppErrorMap format:
 ## Database Schema
 
 ### ShoppingList Collection:
+
 ```javascript
 {
   awid: String (unique),
   name: String (required, 1-100 chars),
   state: String (enum: 'active', 'archived', 'deleted'),
-  ownerUuIdentity: String (required),
+  ownerIdentity: String (required),
   items: [{
     id: String,
     name: String,
@@ -239,10 +258,23 @@ All endpoints return errors in the uuAppErrorMap format:
 - **Linting:** `npm run lint`
 - **Testing:** Import Insomnia collection and test all endpoints
 
-## Security Features
+## Unit Tests
 
-- Input validation on all endpoints
-- Owner-only operations for sensitive actions
-- Soft delete (data preservation)
-- MongoDB injection protection via Mongoose
-- Proper error handling without data leakage
+To run the Jest unit tests:
+
+1. **Navigate to backend directory:**
+
+   ```bash
+   cd src/backend
+   ```
+
+2. **Run npm install in the backend directory:**
+
+   ```bash
+   npm install
+   ```
+
+3. **Run tests:**
+   ```bash
+   npm test
+   ```

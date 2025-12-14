@@ -3,12 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  ShoppingBag,
-  Wifi,
-  WifiOff,
-  Database,
-} from "lucide-react";
+import { ShoppingBag, Wifi, WifiOff, Database } from "lucide-react";
 
 import Modal from "@/components/Modal";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -33,7 +28,7 @@ export default function Home() {
   const [editingList, setEditingList] = useState<ShoppingList | null>(null);
   const [modalTitle, setModalTitle] = useState("");
   const [modalMode, setModalMode] = useState<"ingredients" | "edit">(
-    "ingredients"
+    "ingredients",
   );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [listToDelete, setListToDelete] = useState<ShoppingList | null>(null);
@@ -49,7 +44,7 @@ export default function Home() {
         setConnectionStatus(shoppingListService.getConnectionStatus());
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Nepodařilo se načíst data"
+          err instanceof Error ? err.message : "Nepodařilo se načíst data",
         );
         console.error("Failed to load shopping lists:", err);
       } finally {
@@ -68,10 +63,9 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-
-    // Filter shopping lists created on home page - todo:
+  // Filter shopping lists created on home page - todo:
   const homeShoppingLists = allShoppingLists.filter(
-    (list) => list.createdOnHome === true
+    (list) => list.createdOnHome === true,
   );
 
   const createShoppingList = async () => {
@@ -92,7 +86,7 @@ export default function Home() {
       setConnectionStatus(shoppingListService.getConnectionStatus());
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Nepodařilo se vytvořit seznam"
+        err instanceof Error ? err.message : "Nepodařilo se vytvořit seznam",
       );
       console.error("Failed to create shopping list:", err);
     }
@@ -110,12 +104,12 @@ export default function Home() {
       setError(null);
       await shoppingListService.deleteShoppingList(listToDelete.id);
       setAllShoppingLists(
-        allShoppingLists.filter((list) => list.id !== listToDelete.id)
+        allShoppingLists.filter((list) => list.id !== listToDelete.id),
       );
       setConnectionStatus(shoppingListService.getConnectionStatus());
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Nepodařilo se smazat seznam"
+        err instanceof Error ? err.message : "Nepodařilo se smazat seznam",
       );
       console.error("Failed to delete shopping list:", err);
     } finally {
@@ -163,14 +157,14 @@ export default function Home() {
                 ingredients,
                 ...(name && { name: name.trim() }),
               }
-            : list
-        )
+            : list,
+        ),
       );
 
       setConnectionStatus(shoppingListService.getConnectionStatus());
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Nepodařilo se uložit změny"
+        err instanceof Error ? err.message : "Nepodařilo se uložit změny",
       );
       console.error("Failed to save changes:", err);
     } finally {

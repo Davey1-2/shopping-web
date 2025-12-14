@@ -21,7 +21,7 @@ export default function ShoppingListDetail() {
   useEffect(() => {
     const savedLists = localStorage.getItem("shoppingLists");
     let lists: ShoppingList[] = [];
-    
+
     if (savedLists) {
       try {
         const parsedLists = JSON.parse(savedLists);
@@ -35,7 +35,7 @@ export default function ShoppingListDetail() {
     }
 
     setAllLists(lists);
-    const foundList = lists.find(list => list.id === id);
+    const foundList = lists.find((list) => list.id === id);
     setShoppingList(foundList || null);
   }, [id]);
 
@@ -43,8 +43,8 @@ export default function ShoppingListDetail() {
     if (!shoppingList) return;
 
     const updatedList = { ...shoppingList, ingredients };
-    const updatedLists = allLists.map(list => 
-      list.id === id ? updatedList : list
+    const updatedLists = allLists.map((list) =>
+      list.id === id ? updatedList : list,
     );
 
     setAllLists(updatedLists);
@@ -53,7 +53,7 @@ export default function ShoppingListDetail() {
   };
 
   const handleDeleteList = () => {
-    const updatedLists = allLists.filter(list => list.id !== id);
+    const updatedLists = allLists.filter((list) => list.id !== id);
     setAllLists(updatedLists);
     localStorage.setItem("shoppingLists", JSON.stringify(updatedLists));
     router.push("/");
@@ -63,7 +63,9 @@ export default function ShoppingListDetail() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Nákupní seznam nenalezen</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            Nákupní seznam nenalezen
+          </h1>
           <button
             onClick={() => router.push("/")}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
@@ -113,7 +115,9 @@ export default function ShoppingListDetail() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Ingredience</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              Ingredience
+            </h2>
             <p className="text-gray-600">
               celkem: {shoppingList.ingredients.length} položek
             </p>
@@ -125,9 +129,7 @@ export default function ShoppingListDetail() {
               <h3 className="text-xl font-medium text-gray-600 mb-2">
                 Zatím žádné ingredience
               </h3>
-              <p className="text-gray-500 mb-4">
-                Přidejte nějaké ingredience!
-              </p>
+              <p className="text-gray-500 mb-4">Přidejte nějaké ingredience!</p>
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
@@ -144,7 +146,9 @@ export default function ShoppingListDetail() {
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-gray-800 font-medium">{ingredient}</span>
+                    <span className="text-gray-800 font-medium">
+                      {ingredient}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -153,7 +157,9 @@ export default function ShoppingListDetail() {
 
           <div className="mt-8 pt-6 border-t border-gray-200">
             <div className="flex justify-center items-center text-sm text-gray-500">
-              <span>Naposledy aktualizováno: {new Date().toLocaleDateString()}</span>
+              <span>
+                Naposledy aktualizováno: {new Date().toLocaleDateString()}
+              </span>
             </div>
           </div>
         </div>

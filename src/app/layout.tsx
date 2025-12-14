@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Nákupní seznamy",
-  description: "Organizujte své nákupy snadno. vytvářejte, spravujte a sledujte své nákupní seznamy.",
+  description:
+    "Organizujte své nákupy snadno. vytvářejte, spravujte a sledujte své nákupní seznamy.",
 };
 
 export default function RootLayout({
@@ -28,9 +29,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );
