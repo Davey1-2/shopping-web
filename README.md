@@ -2,22 +2,17 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, ge tot backend and run the installation package:
+First, go to the backend and run the installation package:
 
 ```bash
-cd src/backend
 npm install
 npm run dev
 ```
 
-Then, run the development server:
+If you want to run unit tests:
 
 ```bash
-cd ../ (only if u are still on backend directory from first step)
+cd src/backend (if you arent in backend directory)
 npm install
-npm run dev
+npm test
 ```
-
----
-
-You should see your shopping list frontpage.
