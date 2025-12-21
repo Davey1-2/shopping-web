@@ -13,6 +13,7 @@ export default function Navbar() {
   const navLinks = [
     { href: "/", label: "Domovní stránka" },
     { href: "/shopping-lists", label: "Všechny nákupní seznamy" },
+    { href: "/detail", label: "Detail" },
   ];
 
   return (

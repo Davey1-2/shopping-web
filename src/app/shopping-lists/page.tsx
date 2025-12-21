@@ -86,17 +86,29 @@ export default function ShoppingListsPage() {
     }
   }, [shoppingLists]);
 
-  const createShoppingList = () => {
+  const createShoppingList = async () => {
     if (newListName.trim() && newListCategory.trim()) {
-      const newList: ShoppingList = {
-        id: Date.now().toString(),
-        name: newListName.trim(),
-        category: newListCategory.trim(),
-        ingredients: [],
-      };
-      setShoppingLists([...shoppingLists, newList]);
-      setNewListName("");
-      setNewListCategory("");
+      try {
+        setError(null);
+        const newList = await shoppingListService.createShoppingList({
+          name: newListName.trim(),
+          category: newListCategory.trim(),
+          ingredients: [],
+        });
+
+        setShoppingLists([...shoppingLists, newList]);
+        setNewListName("");
+        setNewListCategory("");
+        setConnectionStatus(shoppingListService.getConnectionStatus());
+
+        // Reload to ensure we have latest data from backend
+        await loadShoppingLists();
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Nepodařilo se vytvořit seznam",
+        );
+        console.error("Failed to create shopping list:", err);
+      }
     }
   };
 
@@ -120,12 +132,21 @@ export default function ShoppingListsPage() {
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (listToDelete) {
-      setShoppingLists(
-        shoppingLists.filter((list) => list.id !== listToDelete.id),
-      );
-      setListToDelete(null);
+      try {
+        await shoppingListService.deleteShoppingList(listToDelete.id);
+        setShoppingLists(
+          shoppingLists.filter((list) => list.id !== listToDelete.id),
+        );
+        setListToDelete(null);
+        setConnectionStatus(shoppingListService.getConnectionStatus());
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Nepodařilo se smazat seznam",
+        );
+        console.error("Failed to delete shopping list:", err);
+      }
     }
     setIsDeleteDialogOpen(false);
   };
@@ -133,6 +154,27 @@ export default function ShoppingListsPage() {
   const cancelDelete = () => {
     setListToDelete(null);
     setIsDeleteDialogOpen(false);
+  };
+
+  const toggleDone = async (list: ShoppingList) => {
+    try {
+      setError(null);
+      const updatedList = await shoppingListService.toggleDone(
+        list.id,
+        list.done || false,
+      );
+      setShoppingLists(
+        shoppingLists.map((l) => (l.id === list.id ? updatedList : l)),
+      );
+      setConnectionStatus(shoppingListService.getConnectionStatus());
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Nepodařilo se změnit stav seznamu",
+      );
+      console.error("Failed to toggle done:", err);
+    }
   };
 
   const openIngredientsModal = (list: ShoppingList) => {
@@ -149,19 +191,39 @@ export default function ShoppingListsPage() {
     setIsModalOpen(true);
   };
 
-  const saveChanges = (ingredients: string[], name?: string) => {
+  const saveChanges = async (ingredients: string[], name?: string) => {
     if (editingList) {
-      setShoppingLists(
-        shoppingLists.map((list) =>
-          list.id === editingList.id
-            ? {
-                ...list,
-                ingredients,
-                ...(name && { name: name.trim() }),
-              }
-            : list,
-        ),
-      );
+      try {
+        // If name changed, update via API
+        if (name && name.trim() !== editingList.name) {
+          await shoppingListService.updateShoppingList(editingList.id, {
+            name: name.trim(),
+          });
+        }
+
+        // Update local state for immediate feedback
+        setShoppingLists(
+          shoppingLists.map((list) =>
+            list.id === editingList.id
+              ? {
+                  ...list,
+                  ingredients,
+                  ...(name && { name: name.trim() }),
+                }
+              : list,
+          ),
+        );
+
+        setConnectionStatus(shoppingListService.getConnectionStatus());
+
+        // Note: Ingredients are only stored locally for now
+        // Backend doesn't support ingredient updates yet
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Nepodařilo se uložit změny",
+        );
+        console.error("Failed to save changes:", err);
+      }
     }
     setEditingList(null);
   };
@@ -175,6 +237,35 @@ export default function ShoppingListsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+            <p>{error}</p>
+          </div>
+        )}
+
+        {connectionStatus && (
+          <div className="mb-4 flex items-center justify-center gap-2 text-sm">
+            {connectionStatus.usingMock ? (
+              <>
+                <Database className="w-4 h-4 text-orange-600" />
+                <span className="text-orange-700">
+                  Offline režim (Mock data)
+                </span>
+              </>
+            ) : connectionStatus.isOnline ? (
+              <>
+                <Wifi className="w-4 h-4 text-green-600" />
+                <span className="text-green-700">Připojeno k serveru</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-4 h-4 text-red-600" />
+                <span className="text-red-700">Server nedostupný</span>
+              </>
+            )}
+          </div>
+        )}
+
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
             Vytvořit nový nákupní seznam
@@ -246,6 +337,7 @@ export default function ShoppingListsPage() {
                   onViewDetail={(list) =>
                     router.push(`/shopping-list/${list.id}`)
                   }
+                  onToggleDone={toggleDone}
                 />
               ))}
             </div>

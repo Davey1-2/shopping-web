@@ -22,12 +22,16 @@ const DEFAULT_CONFIG: AppConfig = {
 
 class ShoppingListService {
   private config: AppConfig = DEFAULT_CONFIG;
-  private isOnline: boolean = true;
+  private isOnline: boolean = false;
+  private connectionChecked: boolean = false;
 
   constructor() {
     this.loadConfig();
     apiService.updateConfig(this.config.apiBaseUrl, this.config.userIdentity);
-    this.checkConnection();
+    this.checkConnection().then(() => {
+      this.connectionChecked = true;
+      console.log("Connection check completed. isOnline:", this.isOnline);
+    });
   }
 
   private loadConfig(): void {
@@ -52,18 +56,26 @@ class ShoppingListService {
   private async checkConnection(): Promise<void> {
     if (!this.config.useMockData) {
       try {
-        console.log("Testing connection to backend...");
+        console.log(
+          "🔍 Testing connection to backend...",
+          this.config.apiBaseUrl,
+        );
         this.isOnline = await apiService.testConnection();
-        console.log("Backend connection status:", this.isOnline);
+        console.log("✅ Backend connection status:", this.isOnline);
+        console.log(
+          "📡 Active service will be:",
+          this.isOnline ? "API Service" : "Mock Service",
+        );
         if (!this.isOnline) {
-          console.warn("Backend not available, falling back to mock data");
+          console.warn("⚠️ Backend not available, falling back to mock data");
         }
       } catch (error) {
-        console.warn("Connection check failed:", error);
+        console.warn("❌ Connection check failed:", error);
         this.isOnline = false;
       }
     } else {
-      console.log("Using mock data (configured)");
+      console.log("🔧 Using mock data (configured)");
+      this.isOnline = false; // Explicitly set to false when using mock
     }
   }
 
@@ -106,6 +118,7 @@ class ShoppingListService {
       ingredients: apiList.items
         ? apiList.items.map((item) => item?.name || "Unknown Item")
         : [],
+      done: apiList.done || false,
       createdOnHome: this.isUsingMockData(),
     };
   }
@@ -121,15 +134,37 @@ class ShoppingListService {
   }
 
   async createShoppingList(list: Partial<ShoppingList>): Promise<ShoppingList> {
+    // Ensure connection is checked before creating
+    if (!this.connectionChecked && !this.config.useMockData) {
+      console.log("Waiting for connection check to complete...");
+      await this.checkConnection();
+      this.connectionChecked = true;
+    }
+
     try {
+      const serviceName = this.isUsingMockData()
+        ? "Mock Service"
+        : "API Service";
+      console.log(`Creating shopping list using: ${serviceName}`);
+      console.log("Connection status:", this.getConnectionStatus());
+      console.log("Config:", {
+        useMockData: this.config.useMockData,
+        isOnline: this.isOnline,
+      });
+
       const apiData = this.convertToApiFormat(list);
       const result = await this.activeService.createShoppingList(
         apiData.name,
         apiData.category,
       );
+      console.log("Shopping list created successfully:", result);
       return this.convertToFrontendFormat(result);
     } catch (error) {
       console.error("Failed to create shopping list:", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
       throw new Error("Nepodařilo se vytvořit nákupní seznam");
     }
   }
@@ -145,6 +180,13 @@ class ShoppingListService {
   }
 
   async getAllShoppingLists(): Promise<ShoppingList[]> {
+    // Ensure connection is checked before fetching
+    if (!this.connectionChecked && !this.config.useMockData) {
+      console.log("Waiting for connection check to complete...");
+      await this.checkConnection();
+      this.connectionChecked = true;
+    }
+
     try {
       console.log(
         "Getting shopping lists from:",
@@ -179,6 +221,7 @@ class ShoppingListService {
       const result = await this.activeService.updateShoppingList(
         id,
         updates.name,
+        updates.done,
       );
       return this.convertToFrontendFormat(result);
     } catch (error) {
@@ -193,6 +236,23 @@ class ShoppingListService {
     } catch (error) {
       console.error("Failed to delete shopping list:", error);
       throw new Error("Nepodařilo se smazat nákupní seznam");
+    }
+  }
+
+  async toggleDone(id: string, currentDone: boolean): Promise<ShoppingList> {
+    try {
+      // Get the shopping list to get its name
+      const list = await this.activeService.getShoppingList(id);
+      // Update with the new done status
+      const result = await this.activeService.updateShoppingList(
+        id,
+        list.name,
+        !currentDone,
+      );
+      return this.convertToFrontendFormat(result);
+    } catch (error) {
+      console.error("Failed to toggle done status:", error);
+      throw new Error("Nepodařilo se změnit stav seznamu");
     }
   }
 

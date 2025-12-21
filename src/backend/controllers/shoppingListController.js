@@ -96,6 +96,7 @@ export const createShoppingList = async (req, res) => {
       state: savedList.state,
       ownerId: savedList.ownerId,
       items: savedList.items,
+      done: savedList.done,
       createdAt: savedList.createdAt,
       updatedAt: savedList.updatedAt,
     };
@@ -157,6 +158,7 @@ export const getShoppingList = async (req, res) => {
       state: shoppingList.state,
       ownerId: shoppingList.ownerId,
       items: shoppingList.items,
+      done: shoppingList.done,
       createdAt: shoppingList.createdAt,
       updatedAt: shoppingList.updatedAt,
     };
@@ -206,6 +208,7 @@ export const myListShoppingList = async (req, res) => {
       state: list.state,
       ownerId: list.ownerId,
       itemCount: list.items?.length || 0,
+      done: list.done,
       createdAt: list.createdAt,
       updatedAt: list.updatedAt,
     }));
@@ -292,6 +295,9 @@ export const updateShoppingList = async (req, res) => {
     }
 
     shoppingList.name = dtoIn.name.trim();
+    if (dtoIn.done !== undefined) {
+      shoppingList.done = dtoIn.done;
+    }
     shoppingList.updatedAt = new Date();
 
     const updatedList = await shoppingList.save();
@@ -303,6 +309,7 @@ export const updateShoppingList = async (req, res) => {
       state: updatedList.state,
       ownerId: updatedList.ownerId,
       items: updatedList.items,
+      done: updatedList.done,
       createdAt: updatedList.createdAt,
       updatedAt: updatedList.updatedAt,
     };

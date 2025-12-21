@@ -97,6 +97,20 @@ export default function Home() {
     setIsDeleteDialogOpen(true);
   };
 
+  const toggleDone = async (list: ShoppingList) => {
+    try {
+      const updatedList = await shoppingListService.toggleDone(
+        list.id,
+        list.done || false,
+      );
+      setAllShoppingLists(
+        allShoppingLists.map((l) => (l.id === list.id ? updatedList : l)),
+      );
+    } catch (err) {
+      console.error("Failed to toggle done:", err);
+    }
+  };
+
   const confirmDelete = async () => {
     if (!listToDelete) return;
 

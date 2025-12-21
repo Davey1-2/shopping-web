@@ -4,6 +4,7 @@ export interface ShoppingList {
   ingredients: string[];
   category: string;
   createdOnHome?: boolean;
+  done?: boolean;
 }
 
 export interface ModalProps {

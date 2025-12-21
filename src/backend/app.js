@@ -11,8 +11,21 @@ const PORT = process.env.PORT || 3001;
 
 connectDB();
 
-app.use(cors());
+// CORS configuration - allow all origins for development
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "x-user-identity"],
+    credentials: false,
+  }),
+);
 app.use(express.json());
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Backend is running" });
+});
 
 app.use("/shoppingList", shoppingListRoutes);
 

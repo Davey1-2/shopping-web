@@ -1,0 +1,40 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: shopping-list-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: shopping-list-db
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - shopping-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shopping-list-backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MONGODB_URI=mongodb://mongodb:27017/shopping-list-db
+    depends_on:
+      - mongodb
+    networks:
+      - shopping-network
+    volumes:
+      - ./:/app
+      - /app/node_modules
+
+volumes:
+  mongodb_data:
+
+networks:
+  shopping-network:
+    driver: bridge

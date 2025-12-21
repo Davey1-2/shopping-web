@@ -12,6 +12,7 @@ interface CategorySectionProps {
   onDelete: (list: ShoppingList) => void;
   onAddIngredients: (list: ShoppingList) => void;
   onViewDetail: (list: ShoppingList) => void;
+  onToggleDone: (list: ShoppingList) => void;
 }
 
 export default function CategorySection({
@@ -21,6 +22,7 @@ export default function CategorySection({
   onDelete,
   onAddIngredients,
   onViewDetail,
+  onToggleDone,
 }: CategorySectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -51,6 +53,7 @@ export default function CategorySection({
               onDelete={onDelete}
               onAddIngredients={onAddIngredients}
               onViewDetail={onViewDetail}
+              onToggleDone={onToggleDone}
             />
           ))}
         </div>

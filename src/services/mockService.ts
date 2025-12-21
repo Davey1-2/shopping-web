@@ -10,7 +10,7 @@ const MOCK_SHOPPING_LISTS: ApiShoppingList[] = [
     name: "týdenní nákup",
     category: "běžné věci",
     state: "active",
-    ownerUuIdentity: "frontend-user",
+    ownerId: "frontend-user",
     items: [
       {
         id: "1",
@@ -43,6 +43,7 @@ const MOCK_SHOPPING_LISTS: ApiShoppingList[] = [
         addedAt: new Date().toISOString(),
       },
     ],
+    done: false,
     createdAt: new Date(Date.now() - 86400000).toISOString(),
     updatedAt: new Date(Date.now() - 3600000).toISOString(),
   },
@@ -52,7 +53,7 @@ const MOCK_SHOPPING_LISTS: ApiShoppingList[] = [
     name: "party supplies",
     category: "zábava",
     state: "active",
-    ownerUuIdentity: "frontend-user",
+    ownerId: "frontend-user",
     items: [
       {
         id: "6",
@@ -73,6 +74,7 @@ const MOCK_SHOPPING_LISTS: ApiShoppingList[] = [
         addedAt: new Date().toISOString(),
       },
     ],
+    done: true,
     createdAt: new Date(Date.now() - 172800000).toISOString(),
     updatedAt: new Date(Date.now() - 7200000).toISOString(),
   },
@@ -82,7 +84,7 @@ const MOCK_SHOPPING_LISTS: ApiShoppingList[] = [
     name: "zdravé jídlo",
     category: "zdraví",
     state: "active",
-    ownerUuIdentity: "frontend-user",
+    ownerId: "frontend-user",
     items: [
       {
         id: "9",
@@ -109,6 +111,7 @@ const MOCK_SHOPPING_LISTS: ApiShoppingList[] = [
         addedAt: new Date().toISOString(),
       },
     ],
+    done: false,
     createdAt: new Date(Date.now() - 259200000).toISOString(),
     updatedAt: new Date(Date.now() - 10800000).toISOString(),
   },
@@ -137,8 +140,9 @@ class MockService {
       name: name.trim(),
       category: category ? category.trim() : "Obecné",
       state: "active",
-      ownerUuIdentity: "frontend-user",
+      ownerId: "frontend-user",
       items: [],
+      done: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -180,7 +184,11 @@ class MockService {
     };
   }
 
-  async updateShoppingList(id: string, name: string): Promise<ApiShoppingList> {
+  async updateShoppingList(
+    id: string,
+    name: string,
+    done?: boolean,
+  ): Promise<ApiShoppingList> {
     await this.delay();
 
     const listIndex = this.lists.findIndex((l) => l.id === id || l.awid === id);
@@ -191,6 +199,7 @@ class MockService {
     this.lists[listIndex] = {
       ...this.lists[listIndex],
       name: name.trim(),
+      ...(done !== undefined ? { done } : {}),
       updatedAt: new Date().toISOString(),
     };
 

@@ -278,3 +278,48 @@ To run the Jest unit tests:
    ```bash
    npm test
    ```
+
+## Docker
+
+Run the backend and MongoDB using Docker Compose:
+
+### Quick Start
+
+1. **Navigate to backend directory:**
+
+   ```bash
+   cd src/backend
+   ```
+
+2. **Start services:**
+
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **View logs:**
+
+   ```bash
+   docker-compose logs -f backend
+   ```
+
+4. **Stop services:**
+
+   ```bash
+   docker-compose down
+   ```
+
+5. **Stop and remove volumes (clean slate):**
+   ```bash
+   docker-compose down -v
+   ```
+
+### Docker Commands
+
+- **Build and start:** `docker-compose up --build`
+- **Start in background:** `docker-compose up -d`
+- **View logs:** `docker-compose logs -f`
+- **Stop services:** `docker-compose down`
+- **Restart services:** `docker-compose restart`
+
+The backend will be available at `http://localhost:3001` and MongoDB at `mongodb://localhost:27017`.

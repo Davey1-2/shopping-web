@@ -4,13 +4,14 @@ interface ApiShoppingList {
   name: string;
   category?: string;
   state: "active" | "archived" | "deleted";
-  ownerUuIdentity: string;
+  ownerId: string;
   items: Array<{
     id: string;
     name: string;
     completed: boolean;
     addedAt: string;
   }>;
+  done?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -73,8 +74,8 @@ class ApiService {
       console.log("Response data:", data);
 
       if (!response.ok) {
-        if (data.uuAppErrorMap) {
-          const firstError = Object.values(data.uuAppErrorMap)[0] as {
+        if (data.errorMap) {
+          const firstError = Object.values(data.errorMap)[0] as {
             type: string;
             message: string;
             paramMap?: Record<string, string>;
@@ -116,10 +117,18 @@ class ApiService {
     );
   }
 
-  async updateShoppingList(id: string, name: string): Promise<ApiShoppingList> {
+  async updateShoppingList(
+    id: string,
+    name: string,
+    done?: boolean,
+  ): Promise<ApiShoppingList> {
+    const body: { id: string; name: string; done?: boolean } = { id, name };
+    if (done !== undefined) {
+      body.done = done;
+    }
     return this.request<ApiShoppingList>("/shoppingList/update", {
       method: "PUT",
-      body: JSON.stringify({ id, name }),
+      body: JSON.stringify(body),
     });
   }
 
@@ -137,12 +146,31 @@ class ApiService {
 
   async testConnection(): Promise<boolean> {
     try {
-      console.log(`Testing connection to ${this.baseUrl}`);
-      const result = await this.getMyShoppingLists(0, 1);
-      console.log("Connection test successful:", result);
-      return true;
+      console.log(`🔍 Testing connection to ${this.baseUrl}/health`);
+      // First try health endpoint (simpler, no auth needed)
+      const healthResponse = await fetch(`${this.baseUrl}/health`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log(`📡 Health response status: ${healthResponse.status}`);
+
+      if (healthResponse.ok) {
+        const data = await healthResponse.json();
+        console.log("✅ Health check successful - backend is reachable", data);
+        // Health check is enough - backend is accessible
+        // Don't test actual API endpoint as it might fail if no data exists
+        return true;
+      }
+      console.warn("⚠️ Health check failed - status:", healthResponse.status);
+      return false;
     } catch (error) {
-      console.error("Backend connection failed:", error);
+      console.error("❌ Backend connection failed:", error);
+      if (error instanceof Error) {
+        console.error("Error details:", error.message);
+      }
       return false;
     }
   }
