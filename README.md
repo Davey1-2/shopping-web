@@ -2,11 +2,12 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, go to the backend and run the installation package:
+First, run the installation package:
 
 ```bash
 npm install
-npm run dev
+docker-compose up
+npm run dev // runs the website
 ```
 
 If you want to run unit tests:
